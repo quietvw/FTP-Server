@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FTP</title>
+  <link rel="stylesheet" href="ftp.css">
+  <script src="ftp.js" defer></script>
+</head>
+<body>
+  <h2>Chat Room</h2>
+  <div id="chat-container">
+    <div id="conversation-header" style="font-weight: bold; margin-bottom: 10px;"></div>
+    <div id="chat-box">
+      <div id="messages"></div>
+    </div>
+    <div id="input-area">
+      
+      <div id="message-input" class="message-input" contenteditable="true"></div>
+      
+      <input type="file" id="fileInput">
+      <select id="who-to-send" name="who-to-send">
+        <option value="All">All</option>
+      </select>
+      <button id="send-btn">Send</button>
+    </div>
+  </div>
+</body>
+</html>
