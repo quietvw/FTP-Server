@@ -1,0 +1,16 @@
+Table users
+
+id username password path permissions
+
+
+
+
+
+Table settings
+
+id setting value
+
+1 Host 0.0.0.0
+
+2 Port 21
+
