@@ -26,7 +26,8 @@ if ($page == "home") {
 }
 if ($_GET["page"] == "logoff") {
     session_destroy();
-    require("login.php");
+    header("Location: /");
+    
 }
 
 

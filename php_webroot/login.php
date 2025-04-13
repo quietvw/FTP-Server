@@ -31,12 +31,12 @@ if ($user) {
     <link rel="stylesheet" href="dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
-    <title>FTP Server</title>
+    <title>NebulaFTP</title>
   </head>
 
   <body>
       <div class="p-4 flex flex-col justify-center items-center h-screen">
-          <h1 class="absolute text-[50px] text-center font-thin text-white -translate-y-[270%] translate-x-2 tracking-[0.4em] italic">Nebula</h1>
+          <h1 class="absolute text-[50px] text-center font-thin text-white -translate-y-[270%] translate-x-2 tracking-[0.4em] italic">NebulaFTP</h1>
           <form class="bg-white p-2 shadow-lg shadow-black w-[35%] h-80 font-thin flex flex-col justify-center" method="POST" >
               <?php if (isset($error)) { ?> <p class="warningText">The username/password is invalid.</p> <br><?php } ?>
           Username <br> <input class="icon-user p-1 mt-1 border-1 border-black" type="text" name="username"><br>
