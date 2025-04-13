@@ -33,7 +33,8 @@ cursor.execute('SELECT COUNT(*) FROM settings')
 if cursor.fetchone()[0] == 0:
     cursor.executemany('INSERT INTO settings (id, setting, value) VALUES (?, ?, ?)', [
         (1, 'Host', '0.0.0.0'),
-        (2, 'Port', '21')
+        (2, 'Port', '21'),
+        (3, 'NeedRestart', '0')
     ])
 
 cursor.execute('SELECT COUNT(*) FROM users')

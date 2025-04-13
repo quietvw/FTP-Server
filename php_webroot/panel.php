@@ -24,6 +24,12 @@ function check_port($host, $port) {
   <link rel="stylesheet" href="assets/root.css">
   <link rel="stylesheet" href="dist/css/bootstrap.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <!-- Font Awesome CDN -->
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+/>
+
   <title>NebulaFTP Admin</title>
 </head>
 <body class="bg-gray-100">
@@ -56,10 +62,51 @@ function check_port($host, $port) {
               $settings[$row['setting']] = $row['value'];
           }
           echo check_port("127.0.0.1", $settings['Port']) 
-              ? '<p class="text-green-600">Online</p>' 
-              : '<p class="text-red-600">Offline</p>';
+              ? '<p class="text-green-600"><i class="fas fa-check"></i> Online</p>' 
+              : '<p class="text-red-600"><i class="fas fa-times"></i> Offline</p>';
           ?>
-          <p class="text-sm text-gray-500">Last checked: just now</p>
+          <p class="text-sm text-gray-500">Last checked: just now<br>Storage Usage: <?php
+          function foldersize($path) {
+            $total_size = 0;
+            $files = scandir($path);
+            $cleanPath = rtrim($path, '/'). '/';
+        
+            foreach($files as $t) {
+                if ($t<>"." && $t<>"..") {
+                    $currentFile = $cleanPath . $t;
+                    if (is_dir($currentFile)) {
+                        $size = foldersize($currentFile);
+                        $total_size += $size;
+                    }
+                    else {
+                        $size = filesize($currentFile);
+                        $total_size += $size;
+                    }
+                }   
+            }
+        
+            return $total_size;
+        }
+        
+        
+        function format_size($size) {
+            global $units;
+        
+            $mod = 1024;
+        
+            for ($i = 0; $size > $mod; $i++) {
+                $size /= $mod;
+            }
+        
+            $endIndex = strpos($size, ".")+3;
+        
+            return substr( $size, 0, $endIndex).' '.$units[$i];
+        }
+        
+           $units = explode(' ', 'B KB MB GB TB PB');
+          echo format_size(foldersize("../root"));
+
+          ?></p>
 
           <?php
           function upsertSetting($pdo, $setting, $value) {
@@ -129,7 +176,7 @@ function check_port($host, $port) {
               <label class="block text-sm font-medium">Confirm Password</label>
               <input type="password" name="confirm_password" class="w-full p-2 border border-gray-300 rounded-md">
             </div>
-            <button class="mt-4 w-full py-2 bg-green-200 hover:bg-green-300 text-sm rounded-md font-semibold">Save Settings</button>
+            <button class="mt-4 w-full py-2 bg-green-200 hover:bg-green-300 text-sm rounded-md font-semibold"><i class="fas fa-save"></i> Save Settings</button>
           </form>
         </div>
 
@@ -168,13 +215,13 @@ function check_port($host, $port) {
                   <tbody>';
               foreach ($result as $row) {
                   echo '<tr>';
-                  echo '<td class="py-2">' . htmlspecialchars($row["username"]) . '</td>';
+                  echo '<td class="py-2"><i class="fas fa-user"></i> ' . htmlspecialchars($row["username"]) . '</td>';
                   echo '<td class="py-2">' . htmlspecialchars($row["permissions"]) . '</td>';
                   echo '<td class="py-2">';
                   if ($row["username"] != $_SESSION["authorized"]) {
                       echo '<form method="POST" action="?deleteuser" onsubmit="return confirm(\'Are you sure you want to delete this user?\');">
                               <input type="hidden" name="user_id" value="' . $row["username"] . '">
-                              <button type="submit" class="px-3 py-1 bg-red-200 text-red-800 rounded hover:bg-red-300">Delete</button>
+                              <button type="submit" class="px-3 py-1 bg-red-200 text-red-800 rounded hover:bg-red-300"><i class="fas fa-minus"></i> Delete</button>
                           </form>';
                   }
                   echo '</td></tr>';
@@ -203,7 +250,7 @@ function check_port($host, $port) {
                     <option value="user">User Permissions</option>
                   </select>
                 </div>
-                <button class="mt-4 w-full py-2 bg-green-200 hover:bg-green-300 text-sm rounded-md font-semibold">Add User</button>
+                <button class="mt-4 w-full py-2 bg-green-200 hover:bg-green-300 text-sm rounded-md font-semibold"><i class="fas fa-user-plus"></i> Add User</button>
               </form>
             <?php } else {
               echo '<p class="mb-2 text-sm text-red-500 italic">No Permission to Manage Users</p>';
@@ -213,6 +260,23 @@ function check_port($host, $port) {
         <!-- Send File -->
 
           <div class="p-4 border border-gray-300 rounded-md">
+          <h3 class="font-semibold text-lg mb-2 mt-6">Quick Download/Upload</h3>
+            <?php 
+   if (is_dir('../root/' . $_SESSION["authorized"] . '/')) {
+    $files = array_diff(scandir('../root/' . $_SESSION["authorized"] . '/'), array('.', '..'));
+    echo "<h3>Files in Upload Directory:</h3><ul>";
+    foreach ($files as $file) {
+        $encodedFile = urlencode($file);
+        if (is_dir('../root/' . $_SESSION["authorized"] . '/' . $file)) {
+        echo "<li>" . '<i class="fas fa-folder"></i>' . " <a href='download.php?file=$encodedFile'>$file</a></li>";
+        } else {
+          echo "<li>" . '<i class="fas fa-file"></i>' . " <a href='download.php?file=$encodedFile'>$file</a></li>"; 
+        }
+    }
+    echo "</ul>";
+}
+
+?><br><br>
             <div id="send_file">
               <form action="" method="POST" enctype="multipart/form-data">
                   <label for="File">File: </label>
@@ -221,7 +285,7 @@ function check_port($host, $port) {
               </form>
               <?php
                 $myPDO = new PDO('sqlite:../database.db');
-
+             
                 // File upload handling
                 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (isset($_FILES['File']) && $_FILES['File']['error'] === UPLOAD_ERR_OK) {
@@ -254,15 +318,7 @@ function check_port($host, $port) {
                     }
                 }
 
-                if (is_dir($uploadDir)) {
-                    $files = array_diff(scandir($uploadDir), array('.', '..'));
-                    echo "<h3>Files in Upload Directory:</h3><ul>";
-                    foreach ($files as $file) {
-                        $encodedFile = urlencode($file);
-                        echo "<li><a href='download.php?file=$encodedFile'>$file</a></li>";
-                    }
-                    echo "</ul>";
-                }
+               
                 ?>
 
             </div>
