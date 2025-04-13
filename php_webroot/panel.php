@@ -209,7 +209,49 @@ function check_port($host, $port) {
               echo '<p class="mb-2 text-sm text-red-500 italic">No Permission to Manage Users</p>';
             } ?>
         </div>
+
+        <!-- Send File -->
+
+        <div class="p-4 border border-gray-300 rounded-md">
+            <div id="send_file">
+              <form action="" method="POST" enctype="multipart/form-data">
+                  <label for="File">File: </label>
+                  <input type="file" id="File" name="File" required />
+                  <input type="submit" value="Submit">
+              </form>
+              <?php
+                $myPDO = new PDO('sqlite:../database.db');
+
+                // File upload handling
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    if (isset($_FILES['File']) && $_FILES['File']['error'] === UPLOAD_ERR_OK) {
+                        $uploadDir = '../uploads/root/admin/';
+                        $filename = basename($_FILES['File']['name']);
+                        $targetPath = $uploadDir . $filename;
+
+                        // Make sure the upload directory exists
+                        if (!is_dir($uploadDir)) {
+                            mkdir($uploadDir, 0755, true);
+                        }
+
+                        // Move uploaded file
+                        if (move_uploaded_file($_FILES['File']['tmp_name'], $targetPath)) {
+                            echo "<h2>File uploaded successfully!</h2>";
+                            $encodedFilename = urlencode($filename);
+                            echo "<p><a href='download.php?file=$encodedFilename'>Click here to download $filename</a></p>";
+                        } else {
+                            echo "<p>Error moving the uploaded file.</p>";
+                        }
+                    } else {
+                        echo "<p>No file uploaded or upload error occurred.</p>";
+                    }
+                }
+                ?>
+            </div>
+        </div>
       </div>
+
+
 
       <!-- Logout -->
       <div class="mt-10 text-center">
