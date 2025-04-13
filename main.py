@@ -33,7 +33,8 @@ cursor.execute('SELECT COUNT(*) FROM settings')
 if cursor.fetchone()[0] == 0:
     cursor.executemany('INSERT INTO settings (id, setting, value) VALUES (?, ?, ?)', [
         (1, 'Host', '0.0.0.0'),
-        (2, 'Port', '21')
+        (2, 'Port', '21'),
+        (3, 'NeedRestart', '0')
     ])
 
 cursor.execute('SELECT COUNT(*) FROM users')
@@ -59,6 +60,8 @@ for user in users:
 
 handler = FTPHandler
 handler.authorizer = authorizer
+handler.passive_ports = range(50100, 50200)
+handler.banner = "NebulaFTP server ready."
 cursor.execute("SELECT value FROM settings WHERE setting = 'Host'")
 host = cursor.fetchone()[0]
 cursor.execute("SELECT value FROM settings WHERE setting = 'Port'")
