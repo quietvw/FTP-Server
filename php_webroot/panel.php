@@ -212,7 +212,7 @@ function check_port($host, $port) {
 
         <!-- Send File -->
 
-        <div class="p-4 border border-gray-300 rounded-md">
+          <div class="p-4 border border-gray-300 rounded-md">
             <div id="send_file">
               <form action="" method="POST" enctype="multipart/form-data">
                   <label for="File">File: </label>
@@ -225,7 +225,7 @@ function check_port($host, $port) {
                 // File upload handling
                 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (isset($_FILES['File']) && $_FILES['File']['error'] === UPLOAD_ERR_OK) {
-                        $uploadDir = '../uploads/root/admin/';
+                        $uploadDir = '../root/' . $_SESSION["authorized"] . '/';
                         $filename = basename($_FILES['File']['name']);
                         $targetPath = $uploadDir . $filename;
 
@@ -234,36 +234,39 @@ function check_port($host, $port) {
                             mkdir($uploadDir, 0755, true);
                         }
 
+                        // Check if file already exists, if so, rename it
+                        if (file_exists($targetPath)) {
+                            $fileInfo = pathinfo($filename);
+                            $filename = $fileInfo['filename'] . '_' . time() . '.' . $fileInfo['extension'];
+                            $targetPath = $uploadDir . $filename;
+                        }
+
                         // Move uploaded file
                         if (move_uploaded_file($_FILES['File']['tmp_name'], $targetPath)) {
                             echo "<h2>File uploaded successfully!</h2>";
                             $encodedFilename = urlencode($filename);
                             echo "<p><a href='download.php?file=$encodedFilename'>Click here to download $filename</a></p>";
                         } else {
-                            echo "<p>Error moving the uploaded file.</p>";
+                            echo "<p>Error moving the uploaded file. Please check permissions or try again later.</p>";
                         }
                     } else {
-                        echo "<p>No file uploaded or upload error occurred.</p>";
+                        echo "<p>No file uploaded or upload error occurred. Error Code: " . $_FILES['File']['error'] . "</p>";
                     }
                 }
 
-
-
                 if (is_dir($uploadDir)) {
-                  
-                  $files = array_diff(scandir($uploadDir), array('.', '..'));
-                  echo "<h3>Files in Upload Directory:</h3><ul>";
-                  foreach ($files as $file) {
-                      $encodedFile = urlencode($file);
-                      echo "<li><a href='download.php?file=$encodedFile'>$file</a></li>";
-                  }
-                  echo "</ul>";
-
+                    $files = array_diff(scandir($uploadDir), array('.', '..'));
+                    echo "<h3>Files in Upload Directory:</h3><ul>";
+                    foreach ($files as $file) {
+                        $encodedFile = urlencode($file);
+                        echo "<li><a href='download.php?file=$encodedFile'>$file</a></li>";
+                    }
+                    echo "</ul>";
                 }
-                
                 ?>
+
             </div>
-        </div>
+          </div>
       </div>
 
 
