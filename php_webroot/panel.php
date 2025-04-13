@@ -70,8 +70,94 @@ function check_port($host, $port) {
             
             ?>
             <p class="text-sm text-gray-500">Last checked: just now</p>
-          </div>
 
+            <?php
+$myPDO = new PDO('sqlite:../database.db');
+$myPDO->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+// Helper: Insert or update setting
+function upsertSetting($pdo, $setting, $value) {
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM settings WHERE setting = :setting");
+    $stmt->execute(['setting' => $setting]);
+    if ($stmt->fetchColumn()) {
+        $update = $pdo->prepare("UPDATE settings SET value = :value WHERE setting = :setting");
+        $update->execute(['value' => $value, 'setting' => $setting]);
+    } else {
+        $insert = $pdo->prepare("INSERT INTO settings (setting, value) VALUES (:setting, :value)");
+        $insert->execute(['setting' => $setting, 'value' => $value]);
+    }
+}
+
+$passwordMessage = null;
+
+// Handle form submission
+if (isset($_POST['Host'])) {
+    $ip = $_POST['Host'] ?? '';
+    $port = $_POST['Port'] ?? '';
+    $newPassword = $_POST['new_password'] ?? '';
+    $confirmPassword = $_POST['confirm_password'] ?? '';
+    if ($userData["permissions"] == "full") { 
+    // Update settings
+    upsertSetting($myPDO, 'Host', $ip);
+    upsertSetting($myPDO, 'Port', $port);
+    $passwordMessage = "Password/Settings updated successfully.";
+    }
+    
+    // Update admin password if entered
+    if (!empty($newPassword)) {
+        if ($newPassword === $confirmPassword) {
+            $hashedPassword = $newPassword;
+            $stmt = $myPDO->prepare("UPDATE users SET password = :password WHERE username = 'admin'");
+            $stmt->execute(['password' => $hashedPassword]);
+            if ($userData["permissions"] == "full") { 
+            $passwordMessage = "Password/Settings updated successfully.";
+            } else {
+                $passwordMessage = "Password updated successfully.";   
+            }
+        } else {
+            $passwordMessage = "Passwords do not match.";
+        }
+    }
+}
+
+// Fetch settings
+$settingsResult = $myPDO->query("SELECT setting, value FROM settings");
+$settings = [];
+foreach ($settingsResult as $row) {
+    $settings[$row['setting']] = $row['value'];
+}
+?>
+
+<br><br>
+<!-- Admin Settings Panel -->
+  <h3 class="font-semibold text-lg mb-2">Server Settings</h3>
+  <p class="text-sm text-gray-700 mb-4">Change server settings and password below.</p>
+
+  <?php if (isset($passwordMessage)) { ?>
+    <p class="mb-2 text-sm text-red-500 italic"><?php echo htmlspecialchars($passwordMessage); ?></p>
+  <?php } ?>
+
+  <form method="POST" class="space-y-3">
+    <div>
+      <label class="block text-sm font-medium">Listen IP</label>
+      <input type="text" name="Host" value="<?php echo htmlspecialchars($settings['Host'] ?? ''); ?>" class="w-full p-2 border border-gray-300 rounded-md" <?php if ($userData["permissions"] != "full") echo "disabled style='background-color:darkgrey;'"; ?>>
+    </div>
+    <div>
+      <label class="block text-sm font-medium">Listen Port</label>
+      <input type="text" name="Port" value="<?php echo htmlspecialchars($settings['Port'] ?? ''); ?>" class="w-full p-2 border border-gray-300 rounded-md" <?php if ($userData["permissions"] != "full") echo "disabled style='background-color:darkgrey;'"; ?>>
+    </div>
+    <div>
+      <label class="block text-sm font-medium">New Password <span class="text-gray-400 text-xs">(optional)</span></label>
+      <input type="password" name="new_password" class="w-full p-2 border border-gray-300 rounded-md" placeholder="New password">
+    </div>
+    <div>
+      <label class="block text-sm font-medium">Confirm Password</label>
+      <input type="password" name="confirm_password" class="w-full p-2 border border-gray-300 rounded-md">
+    </div>
+    <button class="mt-4 w-full py-2 bg-green-200 hover:bg-green-300 text-sm rounded-md font-semibold">Save Settings</button>
+  </form>
+  </div>
+         
      <!-- User Management -->
 <div class="p-4 border border-gray-300 rounded-md">
   <h3 class="font-semibold text-lg mb-2">Users</h3>
@@ -174,96 +260,10 @@ if (isset($_GET["deleteuser"]) && isset($_POST["user_id"]) && $userData["permiss
      } ?>
 </div>
 
-
+    </div>
       
 
-          <?php
-$myPDO = new PDO('sqlite:../database.db');
-$myPDO->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-// Helper: Insert or update setting
-function upsertSetting($pdo, $setting, $value) {
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM settings WHERE setting = :setting");
-    $stmt->execute(['setting' => $setting]);
-    if ($stmt->fetchColumn()) {
-        $update = $pdo->prepare("UPDATE settings SET value = :value WHERE setting = :setting");
-        $update->execute(['value' => $value, 'setting' => $setting]);
-    } else {
-        $insert = $pdo->prepare("INSERT INTO settings (setting, value) VALUES (:setting, :value)");
-        $insert->execute(['setting' => $setting, 'value' => $value]);
-    }
-}
-
-$passwordMessage = null;
-
-// Handle form submission
-if (isset($_POST['Host'])) {
-    $ip = $_POST['Host'] ?? '';
-    $port = $_POST['Port'] ?? '';
-    $newPassword = $_POST['new_password'] ?? '';
-    $confirmPassword = $_POST['confirm_password'] ?? '';
-    if ($userData["permissions"] == "full") { 
-    // Update settings
-    upsertSetting($myPDO, 'Host', $ip);
-    upsertSetting($myPDO, 'Port', $port);
-    $passwordMessage = "Password/Settings updated successfully.";
-    }
-    
-    // Update admin password if entered
-    if (!empty($newPassword)) {
-        if ($newPassword === $confirmPassword) {
-            $hashedPassword = $newPassword;
-            $stmt = $myPDO->prepare("UPDATE users SET password = :password WHERE username = 'admin'");
-            $stmt->execute(['password' => $hashedPassword]);
-            if ($userData["permissions"] == "full") { 
-            $passwordMessage = "Password/Settings updated successfully.";
-            } else {
-                $passwordMessage = "Password updated successfully.";   
-            }
-        } else {
-            $passwordMessage = "Passwords do not match.";
-        }
-    }
-}
-
-// Fetch settings
-$settingsResult = $myPDO->query("SELECT setting, value FROM settings");
-$settings = [];
-foreach ($settingsResult as $row) {
-    $settings[$row['setting']] = $row['value'];
-}
-?>
-
-
-<!-- Admin Settings Panel -->
-<div class="p-4 border border-gray-300 rounded-md">
-  <h3 class="font-semibold text-lg mb-2">Server Settings</h3>
-  <p class="text-sm text-gray-700 mb-4">Change server settings and password below.</p>
-
-  <?php if (isset($passwordMessage)) { ?>
-    <p class="mb-2 text-sm text-red-500 italic"><?php echo htmlspecialchars($passwordMessage); ?></p>
-  <?php } ?>
-
-  <form method="POST" class="space-y-3">
-    <div>
-      <label class="block text-sm font-medium">Listen IP</label>
-      <input type="text" name="Host" value="<?php echo htmlspecialchars($settings['Host'] ?? ''); ?>" class="w-full p-2 border border-gray-300 rounded-md" <?php if ($userData["permissions"] != "full") echo "disabled style='background-color:darkgrey;'"; ?>>
-    </div>
-    <div>
-      <label class="block text-sm font-medium">Listen Port</label>
-      <input type="text" name="Port" value="<?php echo htmlspecialchars($settings['Port'] ?? ''); ?>" class="w-full p-2 border border-gray-300 rounded-md" <?php if ($userData["permissions"] != "full") echo "disabled style='background-color:darkgrey;'"; ?>>
-    </div>
-    <div>
-      <label class="block text-sm font-medium">New Password <span class="text-gray-400 text-xs">(optional)</span></label>
-      <input type="password" name="new_password" class="w-full p-2 border border-gray-300 rounded-md" placeholder="New password">
-    </div>
-    <div>
-      <label class="block text-sm font-medium">Confirm Password</label>
-      <input type="password" name="confirm_password" class="w-full p-2 border border-gray-300 rounded-md">
-    </div>
-    <button class="mt-4 w-full py-2 bg-green-200 hover:bg-green-300 text-sm rounded-md font-semibold">Save Settings</button>
-  </form>
-  </div></div>
+       
 
 
         <!-- Logout Button -->
