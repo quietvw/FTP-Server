@@ -16,13 +16,15 @@
     </div>
     <div id="input-area">
       
-      <div id="message-input" class="message-input" contenteditable="true"></div>
-      
-      <input type="file" id="fileInput">
-      <select id="who-to-send" name="who-to-send">
-        <option value="All">All</option>
-      </select>
-      <button id="send-btn">Send</button>
+      <form method="post" action="/ws/login">
+        <div>
+          <label for="file">Choose file to upload</label>
+          <input type="file" id="file" name="file" multiple />
+        </div>
+        <div>
+          <button>Submit</button>
+        </div>
+      </form>
     </div>
   </div>
 </body>
