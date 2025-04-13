@@ -1,5 +1,6 @@
 <?php
 session_start();
+error_reporting(0); // Remove for later
 class MyDB extends SQLite3
 {
     function __construct()
