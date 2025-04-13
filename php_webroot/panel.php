@@ -246,6 +246,21 @@ function check_port($host, $port) {
                         echo "<p>No file uploaded or upload error occurred.</p>";
                     }
                 }
+
+
+
+                if (is_dir($uploadDir)) {
+                  
+                  $files = array_diff(scandir($uploadDir), array('.', '..'));
+                  echo "<h3>Files in Upload Directory:</h3><ul>";
+                  foreach ($files as $file) {
+                      $encodedFile = urlencode($file);
+                      echo "<li><a href='download.php?file=$encodedFile'>$file</a></li>";
+                  }
+                  echo "</ul>";
+
+                }
+                
                 ?>
             </div>
         </div>
