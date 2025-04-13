@@ -1,6 +1,17 @@
 
 <?php if (isset($_POST["username"])) {
-if ($_POST["username"] == "admin" && $_POST["password"] == "admin") {
+    $myPDO = new PDO('sqlite:../database.db');
+// Replace these with the actual input values (e.g., from a form)
+$username = $_POST['username'] ?? '';
+$password = $_POST['password'] ?? '';
+
+// Prepare the SQL to avoid SQL injection
+$stmt = $myPDO->prepare("SELECT * FROM users WHERE username = :username AND password = :password");
+$stmt->execute(['username' => $username, 'password' => $password]);
+
+$user = $stmt->fetch();
+
+if ($user) {
     $_SESSION["authorized"] = $_POST["username"];
     require("panel.php");
     die();
