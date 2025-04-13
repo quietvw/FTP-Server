@@ -59,7 +59,10 @@ for user in users:
 
 handler = FTPHandler
 handler.authorizer = authorizer
-
-server = FTPServer(("127.0.0.1", 21), handler)
+cursor.execute("SELECT value FROM settings WHERE setting = 'Host'")
+host = cursor.fetchone()[0]
+cursor.execute("SELECT value FROM settings WHERE setting = 'Port'")
+port = int(cursor.fetchone()[0]) 
+server = FTPServer((host, port), handler)
 server.serve_forever()
 
