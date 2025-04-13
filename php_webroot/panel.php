@@ -225,7 +225,7 @@ function check_port($host, $port) {
                 // File upload handling
                 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (isset($_FILES['File']) && $_FILES['File']['error'] === UPLOAD_ERR_OK) {
-                        $uploadDir = '../uploads/root/admin/';
+                        $uploadDir = '../root/' . $_SESSION["authorized"] . '/';
                         $filename = basename($_FILES['File']['name']);
                         $targetPath = $uploadDir . $filename;
 
