@@ -1,6 +1,7 @@
 from pyftpdlib.authorizers import DummyAuthorizer
 from pyftpdlib.handlers import FTPHandler
 from pyftpdlib.servers import FTPServer
+from pathlib import Path
 import sqlite3
 
 
@@ -35,12 +36,26 @@ if cursor.fetchone()[0] == 0:
         (2, 'Port', '21')
     ])
 
+cursor.execute('SELECT COUNT(*) FROM users')
+if cursor.fetchone()[0] == 0:
+    cursor.executemany('INSERT INTO users (id, username, password, path, permissions) VALUES (?, ?, ?, ?, ?)', [
+        (1, 'admin', 'admin', 'admin', "full")
+    ])
+
 # Commit and close
 conn.commit()
 
 authorizer = DummyAuthorizer()
-authorizer.add_user("user", "12345", "/home/giampaolo", perm="elradfmwMT")
-authorizer.add_anonymous("/home/nobody")
+# Fetch all users
+cursor.execute('SELECT * FROM users')
+users = cursor.fetchall()
+
+# Loop through each user
+for user in users:
+    user_id, username, password, path, permissions = user
+    print(f"ID: {user_id}, Username: {username}, Path: {path}, Permissions: {permissions}")
+    Path("root/" + path).mkdir(parents=True, exist_ok=True)
+    authorizer.add_user(username, password, "root/" + path, perm="elradfmwMT")
 
 handler = FTPHandler
 handler.authorizer = authorizer
