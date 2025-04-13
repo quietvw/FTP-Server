@@ -61,7 +61,7 @@ function check_port($host, $port) {
           foreach ($settingsResult as $row) {
               $settings[$row['setting']] = $row['value'];
           }
-          echo check_port("127.0.0.1", $settings['Port']) 
+          echo check_port("host.docker.internal", $settings['Port']) 
               ? '<p class="text-green-600"><i class="fas fa-check"></i> Online</p>' 
               : '<p class="text-red-600"><i class="fas fa-times"></i> Offline</p>';
           ?>
