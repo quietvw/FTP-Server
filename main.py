@@ -60,6 +60,8 @@ for user in users:
 
 handler = FTPHandler
 handler.authorizer = authorizer
+handler.passive_ports = range(50100, 50200)
+handler.banner = "NebulaFTP server ready."
 cursor.execute("SELECT value FROM settings WHERE setting = 'Host'")
 host = cursor.fetchone()[0]
 cursor.execute("SELECT value FROM settings WHERE setting = 'Port'")
