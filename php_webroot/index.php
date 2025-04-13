@@ -21,12 +21,12 @@ if ($page == "home") {
     } else {
     require("panel.php");
     }
-    if ($_GET["page"] == "logoff") {
-        session_destroy();
-        require("home.php");
-    }
+ 
 }
-
+if ($_GET["page"] == "logoff") {
+    session_destroy();
+    require("login.php");
+}
 
 
 ?>

@@ -1,0 +1,1 @@
+<a href="?page=logoff">Log out</a>
