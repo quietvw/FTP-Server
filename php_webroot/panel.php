@@ -280,7 +280,7 @@ function check_port($host, $port) {
             <div id="send_file">
               <form action="" method="POST" enctype="multipart/form-data">
                   <label for="File">File: </label>
-                  <input class="border-2 border-stone-200 w-23 p-0.6 bg-stone-200 hover:bg-stone-300" type="file" id="File" name="File" required />
+                  <input class="border-2 border-stone-200 w-23 p-0.61 bg-stone-200 hover:bg-stone-300" type="file" id="File" name="File" required />
                   <input class="bg-green-200 hover:bg-green-300 text-sm rounded-md p-2 font-semibold" type="submit" value="Submit">
               </form>
               <?php
